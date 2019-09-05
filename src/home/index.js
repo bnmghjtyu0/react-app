@@ -1,4 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { withRouter } from 'react-router-dom'
+import Child from './child'
+const Home = (props) => {
 
-const Home = () => 'Home';
-export default Home;
+    return (
+        <div><Child /></div>
+    )
+}
+export default withRouter(Home);
