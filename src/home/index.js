@@ -1,4 +1,13 @@
 import React from "react";
-
-const Home = () => 'Home';
+import { AppContext } from '../AppProvider'
+const Home = () => {
+    return (
+        <AppContext.Consumer>
+            {({ page }) => {
+                return page
+            }}
+        </AppContext.Consumer>
+    )
+}
+    ;
 export default Home;
