@@ -1,68 +1,135 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+```jsx
+// App.js
 
-## Available Scripts
+import React from "react";
+import "./App.css";
+import { Route, Link } from "react-router-dom";
+import Home from "./home/";
+import About from "./about/";
+import AppProvider from './AppProvider'
 
-In the project directory, you can run:
+function App() {
+    return (
+        <AppProvider>
+            <div className="App">
+                <Link to="/">Home</Link>
+                <Link to="/about">About</Link>
+                <Route exact path="/" component={Home} />
+                <Route path="/about" component={About} />
+            </div>
+        </AppProvider>
+    );
+}
 
-### `npm start`
+export default App;
+```
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```jsx
+// AppProvider.js
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+import React, { Component } from 'react'
+import { withRouter } from 'react-router-dom'
+class AppProvider extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            page: '213',
+            increment: this.increment,
+            count: 0,
+            unsplashDatas: [],
+            ...this.saveFn(),
+            handleChange: this.handleChange,
+            city: ''
 
-### `npm test`
+        }
+    }
+    componentDidMount() {
+        this.fetchUnsplash()
+    }
+    async fetchUnsplash() {
+        const url = 'https://api.unsplash.com/search/photos?client_id=4070052047e85343f77f7bbfb056ca4da387e25b3114baff0644247779a29964&query=Mountains'
+        fetch(url).then(res => res.json()).then(json => {
+            this.setState({
+                unsplashDatas: json.results
+            })
+        })
+    }
+    increment = () => {
+        this.setState({
+            count: this.state.count + 1
+        })
+    }
+    saveFn() {
+        const params = new URLSearchParams(this.props.history.location.search)
+        console.log(params)
+    }
+    handleChange = (e) => {
+        const { name, value } = e.target
+        this.setState({
+            [name]: value
+        })
+    }
+    render() {
+        return (
+            <AppContext.Provider value={this.state}>
+                {this.props.children}
+            </AppContext.Provider>
+        )
+    }
+}
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export default withRouter(AppProvider)
+export const AppContext = React.createContext();
+```
 
-### `npm run build`
+```jsx
+// Home.js
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+import React from "react";
+import { AppContext } from '../AppProvider'
+const Home = ({ history }) => {
+    return (
+        <AppContext.Consumer>
+            {({ page, increment, count, unsplashDatas, handleChange, city }) => {
+                return (
+                    <div>
+                        <h2>{page}</h2>
+                        <p>{history.location.pathname}</p>
+                        <label>美麗的城市 </label>
+                        <input name="city" value={city} onChange={handleChange} />
+                        {city}
+                        <br />
+                        {count}
+                        <button onClick={increment}>+</button>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>作者</th>
+                                    <th>圖片(另開新頁)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+                                {unsplashDatas && unsplashDatas.map((v, i) => {
+                                    return (
+                                        <tr>
+                                            <td>{v.user.name}</td>
+                                            <td>
+                                                <a href={v.urls.full} target="_blank">連結</a>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+                            </tbody>
+                        </table>
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+                    </div>
+                )
+            }}
+        </AppContext.Consumer>
+    )
+}
+    ;
+export default Home;
+```
